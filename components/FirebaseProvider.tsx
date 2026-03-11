@@ -1,10 +1,16 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { doc, serverTimestamp, setDoc, getDocFromServer } from 'firebase/firestore';
+import { 
+  User, 
+  onAuthStateChanged, 
+  signInWithRedirect, 
+  getRedirectResult,
+  GoogleAuthProvider, 
+  signOut 
+} from 'firebase/auth';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { handleFirestoreError, OperationType } from '../lib/firebase-utils';
 
 interface FirebaseContextType {
   user: User | null;
@@ -29,30 +35,29 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
-    // Test connection
-    const testConnection = async () => {
-      try {
-        await getDocFromServer(doc(db, 'test', 'connection'));
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('the client is offline')) {
-          console.error("Please check your Firebase configuration.");
+    // Handle the redirect result when user returns from Google login page
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          console.log("Redirect sign-in successful:", result.user.displayName);
         }
-      }
-    };
-    testConnection();
+      })
+      .catch((error) => {
+        console.error("Redirect sign-in error:", error.code, error.message);
+      });
 
+    // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setIsAuthReady(true);
 
       if (currentUser) {
-        // Update presence
         try {
           await setDoc(doc(db, 'presence', currentUser.uid), {
             lastActive: serverTimestamp()
           });
         } catch (error) {
-          console.error("Failed to update presence", error);
+          console.error("Failed to update presence:", error);
         }
       }
     });
@@ -60,7 +65,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Update presence periodically
+  // Update presence every minute while logged in
   useEffect(() => {
     if (!user || !isAuthReady) return;
 
@@ -70,9 +75,9 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
           lastActive: serverTimestamp()
         });
       } catch (error) {
-        console.error("Failed to update presence", error);
+        console.error("Failed to update presence:", error);
       }
-    }, 60000); // Every minute
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [user, isAuthReady]);
@@ -80,9 +85,12 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const signIn = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      provider.addScope('email');
+      provider.addScope('profile');
+      // Uses redirect instead of popup — works on all browsers without being blocked
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      console.error("Error signing in", error);
+      console.error("Error initiating sign in:", error);
     }
   };
 
@@ -90,7 +98,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error("Error signing out", error);
+      console.error("Error signing out:", error);
     }
   };
 
