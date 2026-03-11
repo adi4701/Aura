@@ -13,7 +13,7 @@ import { Resources } from '../components/Resources';
 import { LandingPage } from '../components/LandingPage';
 import { Settings } from '../components/Settings';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, LogIn, MessageSquare, LayoutDashboard, Wind, HeartHandshake, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { LogIn, MessageSquare, LayoutDashboard, Wind, HeartHandshake, LogOut, Settings as SettingsIcon } from 'lucide-react';
 
 function MainContent() {
   const { user, signIn, logOut } = useFirebase();

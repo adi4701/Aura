@@ -14,22 +14,34 @@ export function LiveCounter() {
   useEffect(() => {
     if (!isAuthReady) return;
 
-    // Users active in the last 5 minutes
-    const fiveMinutesAgo = new Date();
-    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+    let unsubscribe: (() => void) | null = null;
 
-    const q = query(
-      collection(db, 'presence'),
-      where('lastActive', '>=', Timestamp.fromDate(fiveMinutesAgo))
-    );
+    const setupQuery = () => {
+      if (unsubscribe) unsubscribe();
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setActiveUsers(snapshot.docs.length);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'presence');
-    });
+      // Users active in the last 5 minutes
+      const fiveMinutesAgo = new Date();
+      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
-    return () => unsubscribe();
+      const q = query(
+        collection(db, 'presence'),
+        where('lastActive', '>=', Timestamp.fromDate(fiveMinutesAgo))
+      );
+
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        setActiveUsers(snapshot.docs.length);
+      }, (error) => {
+        handleFirestoreError(error, OperationType.GET, 'presence');
+      });
+    };
+
+    setupQuery();
+    const interval = setInterval(setupQuery, 60000); // Refresh query every minute
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+      clearInterval(interval);
+    };
   }, [isAuthReady]);
 
   return (

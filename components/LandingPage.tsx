@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useMotionValue, useSpring } from 'motion/react';
-import { MessageSquare, LayoutDashboard, Wind, HeartHandshake, ArrowRight, Sparkles, Activity, Shield, Zap, Github, Twitter, Instagram } from 'lucide-react';
+import { MessageSquare, LayoutDashboard, Wind, HeartHandshake, ArrowRight, Activity, Shield, Zap, Github, Twitter, Instagram } from 'lucide-react';
 import { useEffect } from 'react';
 import Image from 'next/image';
 

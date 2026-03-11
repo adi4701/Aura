@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, memo } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
-import { Send, Loader2, Sparkles, Music } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
