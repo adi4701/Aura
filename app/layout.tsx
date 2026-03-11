@@ -1,19 +1,5 @@
 import type {Metadata} from 'next';
-import { Instrument_Serif, DM_Mono } from 'next/font/google';
 import './globals.css';
-
-const instrumentSerif = Instrument_Serif({ 
-  weight: '400', 
-  style: ['normal', 'italic'], 
-  subsets: ['latin'], 
-  variable: '--font-serif' 
-});
-
-const dmMono = DM_Mono({ 
-  weight: ['300', '400', '500'], 
-  subsets: ['latin'], 
-  variable: '--font-mono' 
-});
 
 export const metadata: Metadata = {
   title: 'Aura - Social Wellness & Music',
@@ -22,7 +8,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
-    <html lang="en" className={`${instrumentSerif.variable} ${dmMono.variable}`}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet" />
+        <style>{`
+          :root {
+            --font-serif: 'Instrument Serif', serif;
+            --font-mono: 'DM Mono', monospace;
+          }
+        `}</style>
+      </head>
       <body className="font-mono bg-[#0a0502] text-white" suppressHydrationWarning>{children}</body>
     </html>
   );
