@@ -84,7 +84,10 @@ export function Chatbot() {
 
   const initChat = () => {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) return null;
+    if (!apiKey) {
+      console.error("NEXT_PUBLIC_GEMINI_API_KEY is missing. Please add it to the Secrets panel in AI Studio.");
+      return null;
+    }
 
     const ai = new GoogleGenAI({ apiKey });
     return ai.chats.create({
